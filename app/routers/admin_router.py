@@ -35,12 +35,19 @@ async def login_admin_post(
     raise HTTPException(status_code=401, detail="Invalid username or password")
 
 
+from fastapi import HTTPException
+
+
 @router.get("/panel")
 async def panel_admin_get(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token_admin")
     if not token:
         return RedirectResponse(url="/admin/login", status_code=303)
-    verify_token(token, mode=True)
+
+    try:
+        verify_token(token, mode=True)
+    except Exception:
+        return RedirectResponse(url="/admin/login", status_code=303)
 
     sessions = movies_crud.get_sessions(db)
     return templates.TemplateResponse("admin_panel.html", {"request": request, "sessions": sessions})

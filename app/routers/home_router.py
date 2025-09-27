@@ -13,6 +13,7 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
 def home_get(request: Request, db: Session = Depends(get_db)):
+    # Проверяем токен пользователя
     token = request.cookies.get("access_token_user")
     if not token:
         return RedirectResponse(url="/user/login")
@@ -22,5 +23,17 @@ def home_get(request: Request, db: Session = Depends(get_db)):
     except Exception:
         return RedirectResponse(url="/user/login")
 
-    sessions = movies_crud.get_sessions(db, mode=True)
+    sessions_full = movies_crud.get_sessions(db, mode=True)
+
+    # Создаём список только с базовыми полями
+    sessions = [
+        {
+            "id": s.id,
+            "movie": s.movie,
+            "cinema": s.cinema,
+            "time": s.time
+        }
+        for s in sessions_full
+    ]
+
     return templates.TemplateResponse("home.html", {"request": request, "sessions": sessions})

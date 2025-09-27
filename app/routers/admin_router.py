@@ -7,7 +7,7 @@ from starlette.templating import _TemplateResponse
 from datetime import datetime
 
 from app.utils.security import verify_password
-from app.schemas import MovieSessionForm
+from app.schemas import MovieSessionFull
 from app.config import ADMINS
 from app.utils.token import create_token, verify_token
 from app.database.session import get_db
@@ -36,10 +36,10 @@ async def login_admin_post(
 
 
 @router.get("/panel")
-async def panel_admin_get(request: Request, db: Session = Depends(get_db)) -> _TemplateResponse:
+async def panel_admin_get(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token_admin")
     if not token:
-        raise HTTPException(status_code=401, detail="No token found")
+        return RedirectResponse(url="/admin/login", status_code=303)
     verify_token(token, mode=True)
 
     sessions = movies_crud.get_sessions(db)
@@ -57,10 +57,13 @@ async def logout_admin_get() -> RedirectResponse:
 async def add_session_post(
         request: Request,
         movie: str = Form(...),
+        cinema: str = Form(...),
         date: str = Form(...),
         time: str = Form(...),
         hall: str = Form(...),
         seats: int = Form(...),
+        duration: int = Form(...),
+        description: str = Form(None),
         db: Session = Depends(get_db)
 ) -> RedirectResponse:
     # Проверяем токен
@@ -68,10 +71,22 @@ async def add_session_post(
     if not token:
         raise HTTPException(status_code=401, detail="No token found")
     verify_token(token, mode=True)
+
+    # Парсим дату и время
     dt = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
 
     # Создаём Pydantic объект
-    session = MovieSessionForm(movie=movie, time=dt, hall=hall, seats=seats)
+    session = MovieSessionFull(
+        movie=movie,
+        cinema=cinema,
+        time=dt,
+        hall=hall,
+        seats=seats,
+        duration=duration,
+        description=description
+    )
+
+    # Сохраняем в БД
     movies_crud.create_session(db, session)
 
     # Редирект обратно на панель

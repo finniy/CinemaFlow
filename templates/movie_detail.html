@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CinemaFlow - Home</title>
+    <title>{{ session.movie }} - CinemaFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -12,8 +12,8 @@
         /* Синяя навигационная панель */
         .navbar {
             margin-bottom: 30px;
-            background-color: #0d6efd; /* Bootstrap primary blue */
-            border-radius: 0; /* Прямоугольная */
+            background-color: #0d6efd;
+            border-radius: 0;
             padding: 10px 20px;
         }
 
@@ -32,21 +32,14 @@
             text-decoration: underline;
         }
 
+        /* Карточка с синей линией сверху */
         .card {
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
             overflow: hidden;
         }
 
-        .card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Синяя линия сверху карточки */
         .card::before {
             content: "";
             display: block;
@@ -59,20 +52,29 @@
         }
 
         .card-body {
-            padding-top: 15px; /* чтобы текст не налезал на линию */
+            padding: 25px;
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.75rem;
             font-weight: bold;
+            margin-bottom: 15px;
         }
 
         .card-text {
-            margin-bottom: 0.5rem;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
         }
 
-        .container {
-            max-width: 1200px;
+        .btn-book {
+            background-color: #0d6efd;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-book:hover {
+            background-color: #0b5ed7;
+            color: white;
         }
     </style>
 </head>
@@ -80,7 +82,7 @@
 
 <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">CinemaFlow</a>
+        <a class="navbar-brand" href="/">CinemaFlow</a>
         <div class="collapse navbar-collapse justify-content-end">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -95,18 +97,21 @@
 </nav>
 
 <div class="container">
-    <div class="row">
-        {% for session in sessions %}
-        <div class="col-md-4 mb-4">
-            <div class="card" onclick="window.location.href='/session/{{ session.id }}'">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">{{ session.movie }}</h5>
+                    <h2 class="card-title">{{ session.movie }}</h2>
                     <p class="card-text"><b>Cinema:</b> {{ session.cinema }}</p>
+                    <p class="card-text"><b>Hall:</b> {{ session.hall }}</p>
                     <p class="card-text"><b>Time:</b> {{ session.time.strftime("%Y-%m-%d %H:%M") }}</p>
+                    <p class="card-text"><b>Duration:</b> {{ session.duration }} min</p>
+                    <p class="card-text"><b>Seats Available:</b> {{ session.seats }}</p>
+                    <p class="card-text"><b>Description:</b> {{ session.description }}</p>
+                    <a href="/book/{{ session.id }}" class="btn btn-book mt-3">Book Seat</a>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
 </div>
 

@@ -1,16 +1,19 @@
 from sqlalchemy.orm import Session
 from app.database.models import MovieSession
-from app.schemas import MovieSessionForm
+from app.schemas import MovieSessionFull
 from typing import Type
 from datetime import datetime
 
 
-def create_session(db: Session, session_data: MovieSessionForm) -> MovieSession:
+def create_session(db: Session, session_data: MovieSessionFull) -> MovieSession:
     session = MovieSession(
         movie=session_data.movie,
+        cinema=session_data.cinema,
+        description=session_data.description,
         time=session_data.time,
         hall=session_data.hall,
-        seats=session_data.seats
+        seats=session_data.seats,
+        duration=session_data.duration
     )
     db.add(session)
     db.commit()

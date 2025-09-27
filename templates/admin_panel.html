@@ -10,7 +10,7 @@
         }
 
         .panel-card {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 50px auto;
             padding: 30px;
             border-radius: 15px;
@@ -53,9 +53,12 @@
             <thead>
             <tr>
                 <th>Movie</th>
+                <th>Description</th>
+                <th>Cinema</th>
                 <th>Time</th>
                 <th>Hall</th>
                 <th>Seats</th>
+                <th>Duration (min)</th>
                 <th></th> <!-- колонка для кнопки удаления -->
             </tr>
             </thead>
@@ -63,9 +66,12 @@
             {% for session in sessions %}
             <tr>
                 <td>{{ session.movie }}</td>
+                <td>{{ session.description }}</td>
+                <td>{{ session.cinema }}</td>
                 <td>{{ session.time }}</td>
                 <td>{{ session.hall }}</td>
                 <td>{{ session.seats }}</td>
+                <td>{{ session.duration }}</td>
                 <td>
                     <form action="/admin/delete-session/{{ session.id }}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-danger btn-sm"
@@ -83,10 +89,13 @@
         <h5>Add New Session</h5>
         <form action="/admin/add-session" method="post">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <input type="text" class="form-control" name="movie" placeholder="Movie name" required>
                 </div>
                 <div class="col-md-3">
+                    <input type="text" class="form-control" name="cinema" placeholder="Cinema" required>
+                </div>
+                <div class="col-md-2">
                     <input type="date" class="form-control" name="date" required>
                 </div>
                 <div class="col-md-2">
@@ -97,6 +106,13 @@
                 </div>
                 <div class="col-md-2">
                     <input type="number" class="form-control" name="seats" placeholder="Seats" min="1" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control" name="duration" placeholder="Duration (min)" min="1"
+                           required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" name="description" placeholder="Description">
                 </div>
                 <div class="col-md-1">
                     <button type="submit" class="btn btn-primary">Add</button>

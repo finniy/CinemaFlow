@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from app.database.session import Base
@@ -8,10 +8,13 @@ class MovieSession(Base):
     __tablename__ = 'movies'
 
     id = Column(Integer, primary_key=True, index=True)
-    movie = Column(String, index=True, nullable=False)
-    time = Column(DateTime, index=True, nullable=False)
-    hall = Column(String, index=True, nullable=False)
-    seats = Column(Integer, index=True, nullable=False)
+    movie = Column(String(100), index=True, nullable=False)      # название фильма
+    description = Column(Text, nullable=True)                    # описание фильма
+    cinema = Column(String(100), index=True, nullable=False)     # кинотеатр
+    time = Column(DateTime, index=True, nullable=False)          # время сеанса
+    hall = Column(String(50), index=True, nullable=False)        # зал
+    seats = Column(Integer, index=True, nullable=False)          # всего мест
+    duration = Column(Integer, nullable=False)                   # длительность в минутах
 
     bookings = relationship("BookingSession", back_populates="movie")
 

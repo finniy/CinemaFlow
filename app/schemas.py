@@ -57,15 +57,26 @@ class UserRegister(UserLogin):
     )
 
 
-class MovieSessionForm(BaseModel):
+# Базовый класс с общими полями
+class MovieSessionBase(BaseModel):
     movie: Annotated[
         str,
         Field(..., min_length=1, description="The name of the movie")
     ]
-    time: Annotated[
-        datetime,
-        Field(..., description="Time of the session")
+    cinema: Annotated[
+        str,
+        Field(..., min_length=1, description="The cinema name")
     ]
+    time: Annotated[
+        datetime, Field(..., description="Time of start the session")
+    ]
+
+    class Config:
+        from_attributes = True
+
+
+# Класс для создания сеанса (админ-панель)
+class MovieSessionFull(MovieSessionBase):
     hall: Annotated[
         str,
         Field(..., min_length=1, description="The hall name")
@@ -74,6 +85,14 @@ class MovieSessionForm(BaseModel):
         int,
         Field(..., gt=0, description="Number of seats")
     ]
+    duration: Annotated[
+        int,
+        Field(..., gt=0, description="Duration of the session in minutes")
+    ]
+    description: Annotated[
+        str,
+        Field(None, max_length=2000, description="Description of the movie")
+    ]
 
-    class Config:
-        from_attributes = True
+class MovieSessionForm:
+    pass

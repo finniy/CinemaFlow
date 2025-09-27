@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import admin_router, home_router, user_router
+from app.routers import admin_router, home_router, user_router, session_routers
 from app.database.session import engine
 from app.database import models
 from uvicorn import run
@@ -15,6 +15,7 @@ models.Base.metadata.create_all(bind=engine)
 app.include_router(admin_router.router, prefix="/admin", tags=["Admin"])
 app.include_router(home_router.router, tags=["Home"])
 app.include_router(user_router.router, prefix="/user", tags=["User"])
+app.include_router(session_routers.router, prefix="/session", tags=["Session"])
 
 if __name__ == '__main__':
     run('main:app', host='127.0.0.1', port=8000)

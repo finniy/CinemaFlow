@@ -74,3 +74,21 @@ async def add_session(
     # Редирект обратно на панель
     response = RedirectResponse(url="/admin/panel", status_code=303)
     return response
+
+
+@router.post("/delete-session/{session_id}")
+async def delete_session(session_id: int, request: Request, db: Session = Depends(get_db)):
+    # Проверяем токен администратора
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="No token found")
+    verify_token(token)
+
+    # Удаляем сеанс через CRUD
+    session_to_delete = crud.get_session_by_id(db, session_id)
+    if not session_to_delete:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    crud.delete_session(db, session_id)
+
+    return RedirectResponse(url="/admin/panel", status_code=303)

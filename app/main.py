@@ -4,12 +4,15 @@ from app.database.session import engine
 from app.database import models
 from uvicorn import run
 
-app = FastAPI()
+app = FastAPI(
+    title="CinemaFlow",
+    description="CinemaFlow is a cinema management system with admin panel."
+)
 
 # Создаём таблицы в базе данных (если их ещё нет)
 models.Base.metadata.create_all(bind=engine)
 
-app.include_router(admin.router, prefix="/admin", tags=["admin"])
+app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 
 if __name__ == '__main__':
     run('main:app', host='127.0.0.1', port=8000)

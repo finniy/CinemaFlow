@@ -4,17 +4,17 @@ from fastapi.templating import Jinja2Templates
 from typing import Annotated
 from sqlalchemy.orm import Session
 from starlette.templating import _TemplateResponse
+from datetime import datetime
 
+from app.utils.security import verify_password
 from app.schemas import MovieSessionForm
 from app.config import ADMINS
-from app.token import create_token, verify_token
+from app.utils.token import create_token, verify_token
 from app.database.session import get_db
-from app.database import crud
+from app.database.cruds import movies_crud
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
-SESSIONS = []
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -23,54 +23,56 @@ def login_admin_get(request: Request) -> _TemplateResponse:
 
 
 @router.post("/login")
-async def login(
+async def login_admin_post(
         username: Annotated[str, Form(..., description="Admin username")],
         password: Annotated[str, Form(..., description="Admin password")]
 ) -> RedirectResponse:
-    if username in ADMINS and ADMINS[username] == password:
-        token = create_token(username)
+    if username in ADMINS and verify_password(password, ADMINS[username]):
+        token = create_token(username, mode=True)
         response = RedirectResponse(url="/admin/panel", status_code=303)
-        response.set_cookie(key="access_token", value=token, httponly=True)
+        response.set_cookie(key="access_token_admin", value=token, httponly=True)
         return response
     raise HTTPException(status_code=401, detail="Invalid username or password")
 
 
 @router.get("/panel")
-async def panel(request: Request, db: Session = Depends(get_db)) -> _TemplateResponse:
-    token = request.cookies.get("access_token")
+async def panel_admin_get(request: Request, db: Session = Depends(get_db)) -> _TemplateResponse:
+    token = request.cookies.get("access_token_admin")
     if not token:
         raise HTTPException(status_code=401, detail="No token found")
-    verify_token(token)
+    verify_token(token, mode=True)
 
-    sessions = crud.get_sessions(db)
+    sessions = movies_crud.get_sessions(db)
     return templates.TemplateResponse("admin_panel.html", {"request": request, "sessions": sessions})
 
 
 @router.get("/logout", response_class=RedirectResponse)
-async def logout() -> RedirectResponse:
+async def logout_admin_get() -> RedirectResponse:
     response = RedirectResponse(url="/")
-    response.delete_cookie("access_token")
+    response.delete_cookie("access_token_admin")
     return response
 
 
 @router.post("/add-session")
-async def add_session(
+async def add_session_post(
         request: Request,
         movie: str = Form(...),
+        date: str = Form(...),
         time: str = Form(...),
         hall: str = Form(...),
         seats: int = Form(...),
         db: Session = Depends(get_db)
 ) -> RedirectResponse:
     # Проверяем токен
-    token = request.cookies.get("access_token")
+    token = request.cookies.get("access_token_admin")
     if not token:
         raise HTTPException(status_code=401, detail="No token found")
-    verify_token(token)
+    verify_token(token, mode=True)
+    dt = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
 
     # Создаём Pydantic объект
-    session = MovieSessionForm(movie=movie, time=time, hall=hall, seats=seats)
-    crud.create_session(db, session)
+    session = MovieSessionForm(movie=movie, time=dt, hall=hall, seats=seats)
+    movies_crud.create_session(db, session)
 
     # Редирект обратно на панель
     response = RedirectResponse(url="/admin/panel", status_code=303)
@@ -78,18 +80,18 @@ async def add_session(
 
 
 @router.post("/delete-session/{session_id}")
-async def delete_session(session_id: int, request: Request, db: Session = Depends(get_db)) -> RedirectResponse:
+async def delete_session_post(session_id: int, request: Request, db: Session = Depends(get_db)) -> RedirectResponse:
     # Проверяем токен администратора
-    token = request.cookies.get("access_token")
+    token = request.cookies.get("access_token_admin")
     if not token:
         raise HTTPException(status_code=401, detail="No token found")
-    verify_token(token)
+    verify_token(token, mode=True)
 
     # Удаляем сеанс через CRUD
-    session_to_delete = crud.get_session_by_id(db, session_id)
+    session_to_delete = movies_crud.get_session_by_id(db, session_id)
     if not session_to_delete:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    crud.delete_session(db, session_id)
+    movies_crud.delete_session(db, session_id)
 
     return RedirectResponse(url="/admin/panel", status_code=303)

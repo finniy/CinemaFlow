@@ -68,7 +68,9 @@
                 <td>{{ session.seats }}</td>
                 <td>
                     <form action="/admin/delete-session/{{ session.id }}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Delete
+                        </button>
                     </form>
                 </td>
             </tr>
@@ -85,6 +87,9 @@
                     <input type="text" class="form-control" name="movie" placeholder="Movie name" required>
                 </div>
                 <div class="col-md-3">
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+                <div class="col-md-2">
                     <input type="time" class="form-control" name="time" required>
                 </div>
                 <div class="col-md-2">

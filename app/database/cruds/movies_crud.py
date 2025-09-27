@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.database.models import MovieSession
 from app.schemas import MovieSessionForm
 from typing import Type
+from datetime import datetime
 
 
 def create_session(db: Session, session_data: MovieSessionForm) -> MovieSession:
@@ -17,8 +18,16 @@ def create_session(db: Session, session_data: MovieSessionForm) -> MovieSession:
     return session
 
 
-def get_sessions(db: Session) -> list[Type[MovieSession]]:
-    return db.query(MovieSession).all()
+def get_sessions(db: Session, mode: bool = False) -> list[Type[MovieSession]]:
+    if mode:
+        now = datetime.now()
+        return (
+            db.query(MovieSession)
+            .filter(MovieSession.time >= now)  # только будущие сеансы
+            .order_by(MovieSession.time.asc())  # сортировка по дате
+            .all()
+        )
+    return db.query(MovieSession).order_by(MovieSession.time.asc()).all()
 
 
 def get_session_by_id(db: Session, session_id: int) -> Type[MovieSession] | None:
@@ -31,4 +40,3 @@ def delete_session(db: Session, session_id: int) -> Type[MovieSession] | None:
         db.delete(session)
         db.commit()
     return session
-

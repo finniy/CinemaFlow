@@ -1,10 +1,10 @@
 from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
-from app.config import SECRET_KEY, TOKEN_EXPIRE_MINUTES, ALGORITHM
+from app.config import TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY_ADMIN, SECRET_KEY_USER
 
 
-def create_token(login: str) -> str:
+def create_token(login: str, mode: bool = False) -> str:
     """
     Создаёт JWT токен для указанного логина (login)
 
@@ -14,11 +14,14 @@ def create_token(login: str) -> str:
         "sub": login,
         "exp": datetime.now(timezone.utc) + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
     }
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    if mode:
+        token = jwt.encode(payload, SECRET_KEY_ADMIN, algorithm=ALGORITHM)
+        return token
+    token = jwt.encode(payload, SECRET_KEY_USER, algorithm=ALGORITHM)
     return token
 
 
-def verify_token(token: str) -> str:
+def verify_token(token: str, mode: bool = False) -> str:
     """
     Проверяет токен и возвращает логин пользователя, если токен валидный.
 
@@ -26,8 +29,12 @@ def verify_token(token: str) -> str:
     :raises HTTPException: если токен просрочен или неверный
     """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if mode:
+            payload = jwt.decode(token, SECRET_KEY_ADMIN, algorithms=[ALGORITHM])
+            return payload["sub"]
+        payload = jwt.decode(token, SECRET_KEY_USER, algorithms=[ALGORITHM])
         return payload["sub"]
+
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
     except JWTError:

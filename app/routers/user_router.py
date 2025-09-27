@@ -67,3 +67,9 @@ async def login_user_post(
     response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(key="access_token_user", value=token, httponly=True)
     return response
+
+@router.get("/logout", response_class=RedirectResponse)
+async def logout_user_get() -> RedirectResponse:
+    response = RedirectResponse(url="/")
+    response.delete_cookie("access_token_user")
+    return response

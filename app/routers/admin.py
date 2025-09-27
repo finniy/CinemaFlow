@@ -1,11 +1,14 @@
-from fastapi import Request, HTTPException, Form, APIRouter
+from fastapi import Request, HTTPException, Form, APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from typing import Annotated
+from sqlalchemy.orm import Session
 
-from app.schemas import MovieSession
+from app.schemas import MovieSessionForm
 from app.config import ADMINS
 from app.token import create_token, verify_token
+from app.database.session import get_db
+from app.database import crud
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -32,12 +35,14 @@ async def login(
 
 
 @router.get("/panel")
-async def panel(request: Request):
+async def panel(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="No token found")
     verify_token(token)
-    return templates.TemplateResponse("admin_panel.html", {"request": request, "sessions": SESSIONS})
+
+    sessions = crud.get_sessions(db)
+    return templates.TemplateResponse("admin_panel.html", {"request": request, "sessions": sessions})
 
 
 @router.get("/logout", response_class=RedirectResponse)
@@ -53,7 +58,8 @@ async def add_session(
         movie: str = Form(...),
         time: str = Form(...),
         hall: str = Form(...),
-        seats: int = Form(...)
+        seats: int = Form(...),
+        db: Session = Depends(get_db)
 ):
     # Проверяем токен
     token = request.cookies.get("access_token")
@@ -62,8 +68,8 @@ async def add_session(
     verify_token(token)
 
     # Создаём Pydantic объект
-    session = MovieSession(movie=movie, time=time, hall=hall, seats=seats)
-    SESSIONS.append(dict(session))
+    session = MovieSessionForm(movie=movie, time=time, hall=hall, seats=seats)
+    crud.create_session(db, session)
 
     # Редирект обратно на панель
     response = RedirectResponse(url="/admin/panel", status_code=303)

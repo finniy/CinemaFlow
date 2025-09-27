@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Annotated
+from typing import Annotated
 from datetime import time
 
 
@@ -14,7 +14,7 @@ class AdminLogin(BaseModel):
     ]
 
 
-class MovieSession(BaseModel):
+class MovieSessionForm(BaseModel):
     movie: Annotated[
         str,
         Field(..., min_length=1, description="The name of the movie")
@@ -31,3 +31,6 @@ class MovieSession(BaseModel):
         int,
         Field(..., gt=0, description="Number of seats")
     ]
+
+    class Config:
+        orm_mode = True

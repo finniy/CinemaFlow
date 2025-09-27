@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from app.routers import admin
+from app.database.session import engine
+from app.database import models
 from uvicorn import run
 
 app = FastAPI()
+
+# Создаём таблицы в базе данных (если их ещё нет)
+models.Base.metadata.create_all(bind=engine)
 
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 

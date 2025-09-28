@@ -114,6 +114,9 @@ async def delete_session_post(session_id: int, request: Request, db: Session = D
     if not session_to_delete:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    movies_crud.delete_session(db, session_id)
+    try:
+        movies_crud.delete_session(db, session_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Session not deleted")
 
     return RedirectResponse(url="/admin/panel", status_code=303)

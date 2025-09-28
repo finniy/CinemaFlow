@@ -3,7 +3,7 @@ from app.routers import admin_router, home_router, user_router, session_routers,
 from app.database.session import engine
 from app.database import models
 from uvicorn import run
-from app.exception_handlers import register_exception_handlers
+from app.utils.exception_handlers import register_exception_handlers
 
 
 app = FastAPI(

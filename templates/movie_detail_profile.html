@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ session.movie }} - Booking Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+
+        /* Верхняя синяя панель */
+        .navbar { background-color: #0d6efd; }
+        .navbar-brand { font-weight: bold; font-size: 1.5rem; color: white !important; }
+        .nav-link { color: white !important; }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 50px auto;
+            position: relative;
+        }
+
+        /* Синяя полоска сверху */
+        .card::before {
+            content: "";
+            display: block;
+            height: 5px;
+            background-color: #0d6efd;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+        }
+
+        .card-body { padding: 25px; }
+        .card-title { font-size: 1.75rem; font-weight: bold; margin-bottom: 15px; }
+        .card-text { margin-bottom: 10px; font-size: 1.1rem; }
+
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+            font-weight: 600;
+        }
+        .btn-cancel:hover { background-color: #b02a37; color: white; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">CinemaFlow</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/profile">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title">{{ session.movie }}</h2>
+        <p class="card-text"><b>Cinema:</b> {{ session.cinema }}</p>
+        <p class="card-text"><b>Hall:</b> {{ session.hall }}</p>
+        <p class="card-text"><b>Time:</b> {{ session.time.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p class="card-text"><b>Duration:</b> {{ session.duration }} min</p>
+        <p class="card-text"><b>Description:</b> {{ session.description }}</p>
+        <a href="/book/cancel/{{ session.id }}" class="btn btn-cancel mt-3">Cancel Booking</a>
+    </div>
+</div>
+
+</body>
+</html>

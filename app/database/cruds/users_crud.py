@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.database.models import UserSession
-from app.schemas import UserLogin
+from app.utils.schemas import UserLogin
 from typing import Type
 
 

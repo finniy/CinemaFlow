@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.username }}'s Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+
+        /* Верхняя синяя панель */
+        .navbar { background-color: #0d6efd; }
+        .navbar-brand { font-weight: bold; font-size: 1.5rem; }
+
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .card {
+            width: 20rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            background-color: #fff;
+        }
+
+        .card:hover { transform: scale(1.03); }
+
+        /* Синяя верхняя полоса карточки */
+        .card-header-bar {
+            height: 8px;
+            background-color: #0d6efd;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .card-body h5 { font-size: 1.25rem; margin-bottom: 10px; }
+        .card-text { margin-bottom: 5px; }
+
+        .profile-header { max-width: 900px; margin: 30px auto 10px auto; text-align: center; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand">{{ user.username }}</span>
+        <div class="d-flex">
+            <a href="/" class="btn btn-light me-2">Home</a>
+            <a href="/user/logout" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="profile-header">
+    <h2>Your Bookings</h2>
+    {% if not sessions %}
+        <p>You have no bookings yet.</p>
+    {% endif %}
+</div>
+
+{% if sessions %}
+<div class="container">
+    <div class="card-container">
+        {% for session in sessions %}
+        <a href="/user/profile/session/{{ session.id }}" style="text-decoration: none; color: inherit;">
+            <div class="card">
+                <div class="card-header-bar"></div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ session.movie }}</h5>
+                    <p class="card-text"><b>Cinema:</b> {{ session.cinema }}</p>
+                    <p class="card-text"><b>Hall:</b> {{ session.hall }}</p>
+                    <p class="card-text"><b>Time:</b> {{ session.time.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+</body>
+</html>

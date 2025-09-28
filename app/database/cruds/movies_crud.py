@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.database.models import MovieSession
-from app.schemas import MovieSessionFull
+from app.utils.schemas import MovieSessionFull
 from typing import Type
 from datetime import datetime
 

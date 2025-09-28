@@ -5,11 +5,12 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from starlette.templating import _TemplateResponse
 
+from datetime import datetime
 from app.utils.security import verify_password, hash_password
-from app.schemas import UserRegister
-from app.utils.token import create_token
+from app.utils.schemas import UserRegister
+from app.utils.token import create_token, verify_token
 from app.database.session import get_db
-from app.database.cruds import users_crud
+from app.database.cruds import users_crud, movies_crud
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -68,8 +69,58 @@ async def login_user_post(
     response.set_cookie(key="access_token_user", value=token, httponly=True)
     return response
 
+
 @router.get("/logout", response_class=RedirectResponse)
 async def logout_user_get() -> RedirectResponse:
     response = RedirectResponse(url="/")
     response.delete_cookie("access_token_user")
     return response
+
+
+@router.get("/profile", response_class=HTMLResponse)
+async def user_profile_get(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token_user")
+    if not token:
+        return RedirectResponse(url="/user/login", status_code=303)
+
+    try:
+        username = verify_token(token, mode=False)
+    except Exception:
+        return RedirectResponse(url="/user/login", status_code=303)
+
+    user = users_crud.get_user_by_username(db, username)
+    if not user:
+        return RedirectResponse(url="/user/login", status_code=303)
+
+    # Получаем все забронированные сеансы
+    now = datetime.now()
+    bookings = [b for b in user.bookings if b.movie.time >= now] # список BookingSession
+    sessions = [b.movie for b in bookings]  # извлекаем MovieSession
+
+    # Передаём user и sessions в шаблон
+    return templates.TemplateResponse(
+        "profile.html",
+        {
+            "request": request,
+            "user": user,
+            "sessions": sessions
+        }
+    )
+
+@router.get("/profile/session/{session_id}", response_class=HTMLResponse)
+def session_detail(request: Request, session_id: int, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token_user")
+    if not token:
+        return RedirectResponse(url="/user/login")
+
+    try:
+        verify_token(token, mode=False)
+    except Exception:
+        return RedirectResponse(url="/user/login")
+
+    session = movies_crud.get_session_by_id(db, session_id)
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return templates.TemplateResponse("movie_detail_profile.html", {"request": request, "session": session})

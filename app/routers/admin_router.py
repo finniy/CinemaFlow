@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException, Form, APIRouter, Depends
+from fastapi import Request, Form, APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from typing import Annotated
@@ -7,7 +7,7 @@ from starlette.templating import _TemplateResponse
 from datetime import datetime
 
 from app.utils.security import verify_password
-from app.schemas import MovieSessionFull
+from app.utils.schemas import MovieSessionFull
 from app.config import ADMINS
 from app.utils.token import create_token, verify_token
 from app.database.session import get_db

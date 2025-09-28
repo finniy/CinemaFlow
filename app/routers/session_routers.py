@@ -28,4 +28,4 @@ def session_detail(request: Request, session_id: int, db: Session = Depends(get_
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    return templates.TemplateResponse("movie_detail.html", {"request": request, "session": session})
+    return templates.TemplateResponse("movie_detail_home.html", {"request": request, "session": session})

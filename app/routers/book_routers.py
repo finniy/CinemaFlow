@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+from app.utils.check_valid import check_token, check_user
 from app.database.cruds.booking_crud import delete_booking
 from app.database.session import get_db
 from app.database.cruds import movies_crud, booking_crud, users_crud
@@ -16,20 +17,17 @@ async def book_session(
         session_id: int,
         db: Session = Depends(get_db)
 ):
-    # Проверяем токен пользователя
-    token = request.cookies.get("access_token_user")
-    if not token:
-        return RedirectResponse(url="/user/login", status_code=303)
+    # Проверяем токен и получаем username
+    username_or_redirect = check_token(request, mode=False)
+    if isinstance(username_or_redirect, RedirectResponse):
+        return username_or_redirect
+    username = username_or_redirect
 
-    try:
-        username = verify_token(token, mode=False)
-    except Exception:
-        return RedirectResponse(url="/user/login", status_code=303)
-
-    # Получаем пользователя по username
-    user = users_crud.get_user_by_username(db, username)
-    if not user:
-        return RedirectResponse(url="/user/login", status_code=303)
+    # Проверяем пользователя
+    user_or_redirect = check_user(db, username)
+    if isinstance(user_or_redirect, RedirectResponse):
+        return user_or_redirect
+    user = user_or_redirect
 
     # Проверяем, существует ли сеанс
     session = movies_crud.get_session_by_id(db, session_id)
@@ -51,15 +49,10 @@ async def delete_booking(request: Request, booking_id: int, db: Session = Depend
     """
     Отменяет бронь по её ID и перенаправляет пользователя обратно в профиль.
     """
-    # Проверяем токен пользователя
-    token = request.cookies.get("access_token_user")
-    if not token:
-        return RedirectResponse(url="/user/login", status_code=303)
-
-    try:
-        username = verify_token(token, mode=False)
-    except Exception:
-        return RedirectResponse(url="/user/login", status_code=303)
+    # Проверяем токен и получаем username
+    username_or_redirect = check_token(request, mode=False)
+    if isinstance(username_or_redirect, RedirectResponse):
+        return username_or_redirect
 
     # Пытаемся удалить бронь по booking_id
     try:

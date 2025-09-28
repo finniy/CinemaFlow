@@ -4,13 +4,14 @@ from fastapi.templating import Jinja2Templates
 from typing import Annotated
 from sqlalchemy.orm import Session
 from starlette.templating import _TemplateResponse
+from app.utils.check_valid import check_token, check_user
 
 from datetime import datetime
 from app.utils.security import verify_password, hash_password
 from app.utils.schemas import UserRegister
-from app.utils.token import create_token, verify_token
+from app.utils.token import create_token
 from app.database.session import get_db
-from app.database.cruds import users_crud, movies_crud, booking_crud
+from app.database.cruds import users_crud, booking_crud
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -79,24 +80,23 @@ async def logout_user_get() -> RedirectResponse:
 
 @router.get("/profile", response_class=HTMLResponse)
 async def user_profile_get(request: Request, db: Session = Depends(get_db)):
-    token = request.cookies.get("access_token_user")
-    if not token:
-        return RedirectResponse(url="/user/login", status_code=303)
+    # Проверяем токен и получаем username
+    username_or_redirect = check_token(request, mode=False)
+    if isinstance(username_or_redirect, RedirectResponse):
+        return username_or_redirect
+    username = username_or_redirect
 
-    try:
-        username = verify_token(token, mode=False)
-    except Exception:
-        return RedirectResponse(url="/user/login", status_code=303)
+    # Проверяем пользователя
+    user_or_redirect = check_user(db, username)
+    if isinstance(user_or_redirect, RedirectResponse):
+        return user_or_redirect
+    user = user_or_redirect
 
-    user = users_crud.get_user_by_username(db, username)
-    if not user:
-        return RedirectResponse(url="/user/login", status_code=303)
-
-    # Получаем все забронированные сеансы
+    # Получаем все будущие забронированные сеансы
     now = datetime.now()
-    bookings = [b for b in user.bookings if b.movie.time >= now] # список BookingSession
+    bookings = [b for b in user.bookings if b.movie.time >= now]
 
-    # Передаём user и sessions в шаблон
+    # Отправляем данные в шаблон
     return templates.TemplateResponse(
         "profile.html",
         {
@@ -108,18 +108,16 @@ async def user_profile_get(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/profile/session/{booking_id}", response_class=HTMLResponse)
 def session_detail(request: Request, booking_id: int, db: Session = Depends(get_db)):
-    token = request.cookies.get("access_token_user")
-    if not token:
-        return RedirectResponse(url="/user/login")
+    # Проверяем токен и получаем username
+    username_or_redirect = check_token(request, mode=False)
+    if isinstance(username_or_redirect, RedirectResponse):
+        return username_or_redirect
+    username = username_or_redirect
 
-    try:
-        username = verify_token(token, mode=False)
-    except Exception:
-        return RedirectResponse(url="/user/login")
-
-    user = users_crud.get_user_by_username(db, username)
-    if not user:
-        return RedirectResponse(url="/user/login", status_code=303)
+    # Проверяем пользователя
+    user_or_redirect = check_user(db, username)
+    if isinstance(user_or_redirect, RedirectResponse):
+        return user_or_redirect
 
     booking = booking_crud.get_booking_by_id(db, booking_id)
 

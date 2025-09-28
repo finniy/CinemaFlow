@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from starlette.templating import _TemplateResponse
 from datetime import datetime
 
+from app.utils.check_valid import check_user, check_token
 from app.utils.security import verify_password
 from app.utils.schemas import MovieSessionFull
 from app.config import ADMINS
@@ -40,14 +41,10 @@ from fastapi import HTTPException
 
 @router.get("/panel")
 async def panel_admin_get(request: Request, db: Session = Depends(get_db)):
-    token = request.cookies.get("access_token_admin")
-    if not token:
-        return RedirectResponse(url="/admin/login", status_code=303)
-
-    try:
-        verify_token(token, mode=True)
-    except Exception:
-        return RedirectResponse(url="/admin/login", status_code=303)
+    # Проверяем токен и получаем username
+    username_or_redirect = check_token(request, mode=True)
+    if isinstance(username_or_redirect, RedirectResponse):
+        return username_or_redirect
 
     sessions = movies_crud.get_sessions(db)
     return templates.TemplateResponse("admin_panel.html", {"request": request, "sessions": sessions})

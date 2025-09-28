@@ -3,6 +3,8 @@ from app.routers import admin_router, home_router, user_router, session_routers,
 from app.database.session import engine
 from app.database import models
 from uvicorn import run
+from app.exception_handlers import register_exception_handlers
+
 
 app = FastAPI(
     title="CinemaFlow",
@@ -12,6 +14,8 @@ app = FastAPI(
 # Создаём таблицы в базе данных (если их ещё нет)
 models.Base.metadata.create_all(bind=engine)
 
+# Регистрируем ошибки 404 и тд
+register_exception_handlers(app)
 app.include_router(admin_router.router, prefix="/admin", tags=["Admin"])
 app.include_router(home_router.router, tags=["Home"])
 app.include_router(user_router.router, prefix="/user", tags=["User"])

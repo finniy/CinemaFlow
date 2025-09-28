@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error {{ status_code }}</title>
+    <style>
+        body {
+            background-color: white;
+            color: #0d6efd; /* синий */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .error-container {
+            display: flex;
+            align-items: center;
+            gap: 40px; /* расстояние между текстами */
+            font-size: 80px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div>Oops... </div>
+        <div>{{ status_code }}</div>
+    </div>
+</body>
+</html>

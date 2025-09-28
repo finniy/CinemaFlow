@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database.session import get_db
 from app.database.cruds import movies_crud, booking_crud
 from app.utils.check_valid import check_token, check_user
-
+from app.logger import logger
 router = APIRouter()
 
 
@@ -45,6 +45,7 @@ async def book_session(
         raise HTTPException(status_code=400, detail=str(e))
 
     # Редирект на страницу с деталями брони по booking_id
+    logger.info("Пользователь забронировал место")
     return RedirectResponse(url=f"/user/profile", status_code=303)
 
 
@@ -68,4 +69,5 @@ async def delete_booking(request: Request, booking_id: int, db: Session = Depend
         pass
 
     # Редирект обратно на профиль
+    logger.info("Пользователь отменил бронь")
     return RedirectResponse(url="/user/profile", status_code=303)

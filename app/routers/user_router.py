@@ -11,6 +11,7 @@ from app.utils.schemas import UserRegister
 from app.utils.token import create_token
 from app.database.session import get_db
 from app.database.cruds import users_crud, booking_crud
+from app.logger import logger
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -49,6 +50,8 @@ async def register_user_post(
     token = create_token(username, mode=False)
     response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(key="access_token_user", value=token, httponly=True)
+
+    logger.info("Зарегистрировался новый пользователь")
     return response
 
 

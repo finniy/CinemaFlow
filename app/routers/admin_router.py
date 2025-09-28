@@ -12,6 +12,7 @@ from app.database.cruds import movies_crud
 from app.utils.check_valid import check_token
 from app.utils.security import verify_password
 from app.utils.schemas import MovieSessionFull
+from app.logger import logger
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -60,6 +61,9 @@ async def panel_admin_get(request: Request, db: Session = Depends(get_db)):
         return username_or_redirect
 
     sessions = movies_crud.get_sessions(db)
+
+    logger.info("Админ вошел в систему")
+
     return templates.TemplateResponse("admin_panel.html", {"request": request, "sessions": sessions})
 
 
@@ -117,6 +121,8 @@ async def add_session_post(
 
     # Редирект обратно на панель
     response = RedirectResponse(url="/admin/panel", status_code=303)
+
+    logger.info("Админ добавил сеанс")
     return response
 
 
@@ -144,4 +150,5 @@ async def delete_session_post(session_id: int, request: Request, db: Session = D
     except Exception:
         raise HTTPException(status_code=404, detail="Session not deleted")
 
+    logger.info("Админ удалил сеанс")
     return RedirectResponse(url="/admin/panel", status_code=303)

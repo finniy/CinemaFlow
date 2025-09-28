@@ -5,6 +5,7 @@ from app.routers import admin_router, home_router, user_router, session_routers,
 from app.utils.exception_handlers import register_exception_handlers
 from app.database.session import engine
 from app.database import models
+from app.logger import logger
 
 app = FastAPI(
     title="CinemaFlow",
@@ -24,4 +25,5 @@ app.include_router(session_routers.router, prefix="/session", tags=["Session"])
 app.include_router(book_routers.router, prefix="/book", tags=["Book"])
 
 if __name__ == '__main__':
+    logger.info("Запуск CinemaFlow")
     run('main:app', host='127.0.0.1', port=8000)

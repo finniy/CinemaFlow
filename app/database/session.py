@@ -11,6 +11,10 @@ Base = declarative_base()
 
 
 def get_db():
+    """
+    Генератор для предоставления сессии базы данных.
+    Закрывает сессию после использования.
+    """
     db = session_local()
     try:
         yield db

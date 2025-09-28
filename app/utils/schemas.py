@@ -4,6 +4,10 @@ from datetime import datetime
 
 
 class Admin(BaseModel):
+    """
+    Базовая схема для администратора.
+    Содержит username и password с описаниями.
+    """
     username: str = Field(
         ...,
         description="Username must contain only English letters and numbers",
@@ -15,11 +19,20 @@ class Admin(BaseModel):
 
 
 class AdminLogin(Admin):
+    """
+    Схема для входа администратора.
+    Наследует Admin, поддерживает загрузку из ORM объектов.
+    """
+
     class Config:
         from_attributes = True
 
 
 class AdminDB(Admin):
+    """
+    Схема администратора в базе данных.
+    Пароль имеет минимальную длину.
+    """
     password: str = Field(
         ...,
         min_length=4,
@@ -28,6 +41,10 @@ class AdminDB(Admin):
 
 
 class User(BaseModel):
+    """
+    Базовая схема для пользователя.
+    Содержит username и password с ограничениями по длине и шаблону.
+    """
     username: str = Field(
         ...,
         min_length=3,
@@ -45,11 +62,20 @@ class User(BaseModel):
 
 
 class UserLogin(User):
+    """
+    Схема для входа пользователя.
+    Наследует User и поддерживает загрузку из ORM объектов.
+    """
+
     class Config:
         from_attributes = True
 
 
 class UserRegister(UserLogin):
+    """
+    Схема для регистрации пользователя.
+    Пароль дополнительно проверяется по длине.
+    """
     password: str = Field(
         ...,
         min_length=4,
@@ -59,6 +85,10 @@ class UserRegister(UserLogin):
 
 # Базовый класс с общими полями
 class MovieSessionBase(BaseModel):
+    """
+    Базовая схема для сеанса фильма.
+    Общие поля: название фильма, кинотеатр, время начала.
+    """
     movie: Annotated[
         str,
         Field(..., min_length=1, description="The name of the movie")
@@ -77,6 +107,10 @@ class MovieSessionBase(BaseModel):
 
 # Класс для создания сеанса (админ-панель)
 class MovieSessionFull(MovieSessionBase):
+    """
+    Полная схема для создания или управления сеансом.
+    Включает зал, количество мест, длительность и описание фильма.
+    """
     hall: Annotated[
         str,
         Field(..., min_length=1, description="The hall name")
@@ -93,6 +127,3 @@ class MovieSessionFull(MovieSessionBase):
         str,
         Field(None, max_length=2000, description="Description of the movie")
     ]
-
-class MovieSessionForm:
-    pass

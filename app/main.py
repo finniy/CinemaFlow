@@ -1,14 +1,15 @@
 from fastapi import FastAPI
+from uvicorn import run
+
 from app.routers import admin_router, home_router, user_router, session_routers, book_routers
+from app.utils.exception_handlers import register_exception_handlers
 from app.database.session import engine
 from app.database import models
-from uvicorn import run
-from app.utils.exception_handlers import register_exception_handlers
-
 
 app = FastAPI(
     title="CinemaFlow",
-    description="CinemaFlow is a cinema management system with admin panel."
+    description="CinemaFlow is a cinema management system with admin panel.",
+    version="1.0.0"
 )
 
 # Создаём таблицы в базе данных (если их ещё нет)

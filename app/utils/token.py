@@ -1,6 +1,7 @@
+from fastapi import HTTPException
 from jose import jwt, JWTError, ExpiredSignatureError
 from datetime import datetime, timedelta, timezone
-from fastapi import HTTPException
+
 from app.config import TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY_ADMIN, SECRET_KEY_USER
 
 

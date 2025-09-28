@@ -1,12 +1,11 @@
 from fastapi import Request, HTTPException, Form, APIRouter, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from typing import Annotated
 from sqlalchemy.orm import Session
-from starlette.templating import _TemplateResponse
-from app.utils.check_valid import check_token, check_user
-
+from typing import Annotated
 from datetime import datetime
+
+from app.utils.check_valid import check_token, check_user
 from app.utils.security import verify_password, hash_password
 from app.utils.schemas import UserRegister
 from app.utils.token import create_token
@@ -18,7 +17,11 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/register", response_class=HTMLResponse)
-async def register_user_get(request: Request) -> _TemplateResponse:
+async def register_user_get(request: Request):
+    """
+    Возвращает HTML-форму регистрации пользователя.
+    Использует шаблон 'user_register.html'.
+    """
     return templates.TemplateResponse("user_register.html", {"request": request})
 
 
@@ -28,6 +31,11 @@ async def register_user_post(
         password: Annotated[str, Form(..., description="User password")],
         db: Session = Depends(get_db)
 ) -> RedirectResponse:
+    """
+    Обрабатывает POST-запрос на регистрацию нового пользователя.
+    Проверяет существование пользователя, хеширует пароль,
+    создает запись в БД и устанавливает токен в cookie.
+    """
     # проверяем, есть ли пользователь
     existing_user = users_crud.get_user_by_username(db, username)
     if existing_user:
@@ -45,7 +53,11 @@ async def register_user_post(
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def register_user_get(request: Request) -> _TemplateResponse:
+async def login_user_get(request: Request):
+    """
+    Возвращает HTML-форму для входа пользователя.
+    Использует шаблон 'user_login.html'.
+    """
     return templates.TemplateResponse("user_login.html", {"request": request})
 
 
@@ -55,6 +67,11 @@ async def login_user_post(
         password: Annotated[str, Form(..., description="User password")],
         db: Session = Depends(get_db)
 ) -> RedirectResponse:
+    """
+    Обрабатывает POST-запрос на вход пользователя.
+    Проверяет наличие пользователя и валидность пароля,
+    создает токен и устанавливает его в cookie.
+    """
     # ищем пользователя
     existing_user = users_crud.get_user_by_username(db, username)
     if not existing_user:
@@ -73,6 +90,9 @@ async def login_user_post(
 
 @router.get("/logout", response_class=RedirectResponse)
 async def logout_user_get() -> RedirectResponse:
+    """
+    Выход пользователя: удаляет токен из cookie и делает редирект на главную.
+    """
     response = RedirectResponse(url="/")
     response.delete_cookie("access_token_user")
     return response
@@ -80,6 +100,11 @@ async def logout_user_get() -> RedirectResponse:
 
 @router.get("/profile", response_class=HTMLResponse)
 async def user_profile_get(request: Request, db: Session = Depends(get_db)):
+    """
+    Возвращает профиль пользователя с данными и будущими бронированиями.
+    Проверяет токен и существование пользователя в БД.
+    Использует шаблон 'profile.html'.
+    """
     # Проверяем токен и получаем username
     username_or_redirect = check_token(request, mode=False)
     if isinstance(username_or_redirect, RedirectResponse):
@@ -106,8 +131,14 @@ async def user_profile_get(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+
 @router.get("/profile/session/{booking_id}", response_class=HTMLResponse)
 def session_detail(request: Request, booking_id: int, db: Session = Depends(get_db)):
+    """
+    Отображает детали конкретного бронирования пользователя.
+    Проверяет токен, пользователя и наличие бронирования.
+    Использует шаблон 'movie_detail_profile.html'.
+    """
     # Проверяем токен и получаем username
     username_or_redirect = check_token(request, mode=False)
     if isinstance(username_or_redirect, RedirectResponse):
@@ -125,4 +156,3 @@ def session_detail(request: Request, booking_id: int, db: Session = Depends(get_
         raise HTTPException(status_code=404, detail="Booking not found")
 
     return templates.TemplateResponse("movie_detail_profile.html", {"request": request, "booking": booking})
-

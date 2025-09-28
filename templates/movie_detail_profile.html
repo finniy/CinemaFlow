@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ session.movie }} - Booking Details</title>
+    <title>{{ booking.movie.movie }} - Booking Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
@@ -66,13 +66,13 @@
 
 <div class="card">
     <div class="card-body">
-        <h2 class="card-title">{{ session.movie }}</h2>
-        <p class="card-text"><b>Cinema:</b> {{ session.cinema }}</p>
-        <p class="card-text"><b>Hall:</b> {{ session.hall }}</p>
-        <p class="card-text"><b>Time:</b> {{ session.time.strftime('%Y-%m-%d %H:%M') }}</p>
-        <p class="card-text"><b>Duration:</b> {{ session.duration }} min</p>
-        <p class="card-text"><b>Description:</b> {{ session.description }}</p>
-        <a href="/book/cancel/{{ session.id }}" class="btn btn-cancel mt-3">Cancel Booking</a>
+        <h2 class="card-title">{{ booking.movie.movie }}</h2>
+        <p class="card-text"><b>Cinema:</b> {{ booking.movie.cinema }}</p>
+        <p class="card-text"><b>Hall:</b> {{ booking.movie.hall }}</p>
+        <p class="card-text"><b>Time:</b> {{ booking.movie.time.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p class="card-text"><b>Duration:</b> {{ booking.movie.duration }} min</p>
+        <p class="card-text"><b>Description:</b> {{ booking.movie.description }}</p>
+        <a href="/book/cancel/{{ booking.id }}" class="btn btn-cancel mt-3">Cancel Booking</a>
     </div>
 </div>
 

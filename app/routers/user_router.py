@@ -10,7 +10,7 @@ from app.utils.security import verify_password, hash_password
 from app.utils.schemas import UserRegister
 from app.utils.token import create_token, verify_token
 from app.database.session import get_db
-from app.database.cruds import users_crud, movies_crud
+from app.database.cruds import users_crud, movies_crud, booking_crud
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -95,7 +95,6 @@ async def user_profile_get(request: Request, db: Session = Depends(get_db)):
     # Получаем все забронированные сеансы
     now = datetime.now()
     bookings = [b for b in user.bookings if b.movie.time >= now] # список BookingSession
-    sessions = [b.movie for b in bookings]  # извлекаем MovieSession
 
     # Передаём user и sessions в шаблон
     return templates.TemplateResponse(
@@ -103,24 +102,29 @@ async def user_profile_get(request: Request, db: Session = Depends(get_db)):
         {
             "request": request,
             "user": user,
-            "sessions": sessions
+            "bookings": bookings
         }
     )
 
-@router.get("/profile/session/{session_id}", response_class=HTMLResponse)
-def session_detail(request: Request, session_id: int, db: Session = Depends(get_db)):
+@router.get("/profile/session/{booking_id}", response_class=HTMLResponse)
+def session_detail(request: Request, booking_id: int, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token_user")
     if not token:
         return RedirectResponse(url="/user/login")
 
     try:
-        verify_token(token, mode=False)
+        username = verify_token(token, mode=False)
     except Exception:
         return RedirectResponse(url="/user/login")
 
-    session = movies_crud.get_session_by_id(db, session_id)
+    user = users_crud.get_user_by_username(db, username)
+    if not user:
+        return RedirectResponse(url="/user/login", status_code=303)
 
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    booking = booking_crud.get_booking_by_id(db, booking_id)
 
-    return templates.TemplateResponse("movie_detail_profile.html", {"request": request, "session": session})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    return templates.TemplateResponse("movie_detail_profile.html", {"request": request, "booking": booking})
+

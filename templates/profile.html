@@ -57,23 +57,23 @@
 
 <div class="profile-header">
     <h2>Your Bookings</h2>
-    {% if not sessions %}
+    {% if not bookings %}
         <p>You have no bookings yet.</p>
     {% endif %}
 </div>
 
-{% if sessions %}
+{% if bookings %}
 <div class="container">
     <div class="card-container">
-        {% for session in sessions %}
-        <a href="/user/profile/session/{{ session.id }}" style="text-decoration: none; color: inherit;">
+        {% for booking in bookings %}
+        <a href="/user/profile/session/{{ booking.id }}" style="text-decoration: none; color: inherit;">
             <div class="card">
                 <div class="card-header-bar"></div>
                 <div class="card-body">
-                    <h5 class="card-title">{{ session.movie }}</h5>
-                    <p class="card-text"><b>Cinema:</b> {{ session.cinema }}</p>
-                    <p class="card-text"><b>Hall:</b> {{ session.hall }}</p>
-                    <p class="card-text"><b>Time:</b> {{ session.time.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <h5 class="card-title">{{ booking.movie.movie }}</h5>
+                    <p class="card-text"><b>Cinema:</b> {{ booking.movie.cinema }}</p>
+                    <p class="card-text"><b>Hall:</b> {{ booking.movie.hall }}</p>
+                    <p class="card-text"><b>Time:</b> {{ booking.movie.time.strftime('%Y-%m-%d %H:%M') }}</p>
                 </div>
             </div>
         </a>

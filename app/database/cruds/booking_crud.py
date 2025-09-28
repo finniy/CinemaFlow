@@ -38,6 +38,9 @@ def create_booking(db: Session, user_id, movie_id: int) -> BookingSession:
 def get_bookings_by_user(db: Session, user_id: int) -> list[Type[BookingSession]]:
     return db.query(BookingSession).filter(BookingSession.user_id == user_id).all()
 
+def get_booking_by_id(db: Session, booking_id: int) -> BookingSession | None:
+    return db.query(BookingSession).filter(BookingSession.id == booking_id).first()
+
 
 def delete_booking(db: Session, booking_id: int) -> BookingSession | None:
     booking = db.query(BookingSession).filter(BookingSession.id == booking_id).first()

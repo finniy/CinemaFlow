@@ -38,16 +38,19 @@ async def book_session(
 
     # Пытаемся забронировать место
     try:
-        booking_crud.create_booking(db, user_id=user.id, movie_id=session_id)
+        booking = booking_crud.create_booking(db, user_id=user.id, movie_id=session_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Редирект на профиль
-    return RedirectResponse(url="/user/profile", status_code=303)
+    # Редирект на страницу с деталями брони по booking_id
+    return RedirectResponse(url=f"/user/profile", status_code=303)
 
 
-@router.get("/cancel/{session_id}")
-async def delete_booking(request: Request, session_id: int, db: Session = Depends(get_db)):
+@router.get("/cancel/{booking_id}")
+async def delete_booking(request: Request, booking_id: int, db: Session = Depends(get_db)):
+    """
+    Отменяет бронь по её ID и перенаправляет пользователя обратно в профиль.
+    """
     # Проверяем токен пользователя
     token = request.cookies.get("access_token_user")
     if not token:
@@ -58,10 +61,11 @@ async def delete_booking(request: Request, session_id: int, db: Session = Depend
     except Exception:
         return RedirectResponse(url="/user/login", status_code=303)
 
-    # Пытаемся удалить бронь для данного сеанса
+    # Пытаемся удалить бронь по booking_id
     try:
-        booking_crud.delete_booking(db, session_id - 1)
+        booking_crud.delete_booking(db, booking_id)
     except ValueError:
+        # Можно здесь логировать ошибку или игнорировать, если бронь не найдена
         pass
 
     # Редирект обратно на профиль
